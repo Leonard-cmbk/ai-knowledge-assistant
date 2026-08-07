@@ -1,15 +1,19 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-load_dotenv()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra='ignore',
+    )
 
-# DeepSeek-V4-Flash API_KEY
-API_KEY = os.getenv("DEEPSEEK_API_KEY")
-if not API_KEY:
-    raise RuntimeError("缺少 DEEPSEEK_API_KEY， 请在 .env 中配置")
+    deepseek_api_key: str                    #必填
+    deepseek_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-v4-flash"
 
-# DeepSeek-V4-Flash base_url
-DEEPSEEK_URL = os.getenv("DEEPSEEK_URL")
-# DeepSeek-V4-Flash model
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL")
+    request_timeout: float = 60.0            #秒
+    max_retries: int = 3                     #重试次数   
+
+
+settings = Settings()
