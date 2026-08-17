@@ -52,7 +52,7 @@ async def chat_stream(req: ChatRequest):
                 yield text
         except LLMError as exc:
             yield f"[错误]{exc}"
-    return StreamingResponse(gen(), media_type='text/event-stream')
+    return StreamingResponse(gen(), media_type='text/event-stream')#立刻返回响应,HTTP 头发出
 
 
 
