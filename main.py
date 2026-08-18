@@ -42,17 +42,19 @@ async def test_openai():
         return {"result": result}
     except LLMError as exc:
         #502 表示「上游(模型服务)出错」
-        raise JSONResponse(status_code=502, content={"detail": str(exc)}) 
+        return JSONResponse(status_code=502, content={"detail": str(exc)}) 
 
 @app.post("/chat/stream")
 async def chat_stream(req: ChatRequest):
     async def gen():
         try:
-            async for text in llm_client.stream_chat(req.messages):
-                yield text
+            messages = [m.model_dump() for m in req.messages]
+            async for text in llm_client.stream_chat(messages):
+                yield f"data: {text}\n\n" # EventSource 只认 data: 开头、空行结尾的事件帧
+            yield "data: [DONE]\n\n"
         except LLMError as exc:
-            yield f"[错误]{exc}"
-    return StreamingResponse(gen(), media_type='text/event-stream')#立刻返回响应,HTTP 头发出
+            yield f"data: [错误]{exc}\n\n"
+    return StreamingResponse(gen(), media_type='text/event-stream') # 立刻返回响应,HTTP 头发出
 
 
 
